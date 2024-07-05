@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/go-playground/validator/v10"
-	"log"
 	"webserver/dto/request"
 	"webserver/model"
 	"webserver/repository"
@@ -27,7 +26,6 @@ func GetCategoryServiceImp(categoryRepo repository.IWorkCategoryRepository, vali
 func (w WorkCategoryService) Create(request request.CreateWorkCategoryRequest) error {
 	err := w.Validate.Struct(request)
 	if err != nil {
-		log.Fatal("model validation error")
 		return err
 	}
 	w.Repo.Save(model.WorkCategory{

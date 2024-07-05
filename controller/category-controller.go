@@ -20,17 +20,36 @@ func GetWorkCategoryControllerImpl(service service.IWorkCategoryService) *WorkCa
 }
 func (controller *WorkCategoryController) Create(ctx *gin.Context) {
 	req := request.CreateWorkCategoryRequest{}
-	err := ctx.Request.ParseForm()
+
+	// Attempt to bind the JSON request body to the struct
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		log.Println("could not bind json")
-		return // return error
+		log.Printf("Could not bind JSON: %v\n", err) // Log the error for debugging purposes
+		webResponse := response.Response{
+			Code:   400,
+			Status: "Bad Request",
+			Data:   err.Error(), // Include the error message in the response
+		}
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
 	}
 
-	controller.CategoryService.Create(req)
+	// Proceed with business logic
+	err = controller.CategoryService.Create(req)
+	if err != nil {
+		log.Printf("Failed to create category: %v\n", err) // Log the error for debugging purposes
+		webResponse := response.Response{
+			Code:   500, // Internal Server Error
+			Status: "Could not create",
+			Data:   nil,
+		}
+		ctx.JSON(http.StatusInternalServerError, webResponse) // Return a 500 status code for internal server errors
+		return
+	}
 
 	webResponse := response.Response{
 		Code:   200,
-		Status: "category created",
+		Status: "Category Created",
 		Data:   nil,
 	}
 	ctx.JSON(http.StatusOK, webResponse)
